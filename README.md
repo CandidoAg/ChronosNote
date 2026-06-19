@@ -16,9 +16,9 @@ This project is split into focused development phases to track progress and arch
 
 ### 🔲 Phase 1: Core Notion Clone Workspace
 * [x] Configure EF Core + SQLite in the Backend.
-* [ ] Build DB Schema for Rich Text Notes.
-* [ ] Integrate **TipTap/Lexical** editor into the React frontend.
-* [ ] Implement full CRUD API endpoints for real-time document autosaving.
+* [x] Build DB Schema for Rich Text Notes.
+* [x] Integrate **TipTap/Lexical** editor into the React frontend.
+* [x] Implement full CRUD API endpoints for real-time document autosaving.
 
 ### 🔲 Phase 2: Task Scheduler Integration via Hangfire
 * [ ] Inject **Hangfire** backed by SQLite for background queues.
