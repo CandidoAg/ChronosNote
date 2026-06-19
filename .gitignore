@@ -1,0 +1,40 @@
+# ==========================================
+# ChronosNote Global Gitignore (FullStack Monorepo)
+# ==========================================
+
+# --- Node / React / pnpm dependencies ---
+src/client/node_modules/
+src/client/dist/
+src/client/local.env
+src/client/.env.local
+src/client/.env.*.local
+src/client/pnpm-debug.log*
+
+# --- .NET Build & Outputs ---
+src/server/**/bin/
+src/server/**/obj/
+src/server/**/out/
+
+# --- SQLite Databases (Local Development) ---
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+
+# --- IDEs & Editors ---
+# JetBrains (Rider)
+.idea/
+
+# Visual Studio Code
+.vscode/
+!.vscode/extensions.json
+
+# Visual Studio
+.vs/
+*.user
+*.userosscache
+*.sln.docstates
+
+# --- OS generated files ---
+.DS_Store
+Thumbs.db

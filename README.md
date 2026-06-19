@@ -12,10 +12,10 @@ This project is split into focused development phases to track progress and arch
 * [x] Define Monorepo structure.
 * [x] Initialize React 18 + Vite + TypeScript + Tailwind frontend wrapper using `pnpm`.
 * [x] Set up .NET 8 Web API solution with decoupled layers (`Api`, `Core`, `Infrastructure`).
-* [ ] Configure global Git workspace.
+* [x] Configure global Git workspace.
 
 ### 🔲 Phase 1: Core Notion Clone Workspace
-* [ ] Configure EF Core + SQLite in the Backend.
+* [x] Configure EF Core + SQLite in the Backend.
 * [ ] Build DB Schema for Rich Text Notes.
 * [ ] Integrate **TipTap/Lexical** editor into the React frontend.
 * [ ] Implement full CRUD API endpoints for real-time document autosaving.

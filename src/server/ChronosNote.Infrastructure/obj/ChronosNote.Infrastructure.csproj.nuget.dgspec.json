@@ -4,14 +4,14 @@
     "C:\\Users\\Candi\\Learning\\ChronosNote\\src\\server\\ChronosNote.Infrastructure\\ChronosNote.Infrastructure.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Candi\\Learning\\ChronosNote\\src\\server\\ChronosNote.Infrastructure\\ChronosNote.Infrastructure.csproj": {
+    "C:\\Users\\Candi\\Learning\\ChronosNote\\src\\server\\ChronosNote.Core\\ChronosNote.Core.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Candi\\Learning\\ChronosNote\\src\\server\\ChronosNote.Infrastructure\\ChronosNote.Infrastructure.csproj",
-        "projectName": "ChronosNote.Infrastructure",
-        "projectPath": "C:\\Users\\Candi\\Learning\\ChronosNote\\src\\server\\ChronosNote.Infrastructure\\ChronosNote.Infrastructure.csproj",
+        "projectUniqueName": "C:\\Users\\Candi\\Learning\\ChronosNote\\src\\server\\ChronosNote.Core\\ChronosNote.Core.csproj",
+        "projectName": "ChronosNote.Core",
+        "projectPath": "C:\\Users\\Candi\\Learning\\ChronosNote\\src\\server\\ChronosNote.Core\\ChronosNote.Core.csproj",
         "packagesPath": "C:\\Users\\Candi\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Candi\\Learning\\ChronosNote\\src\\server\\ChronosNote.Infrastructure\\obj\\",
+        "outputPath": "C:\\Users\\Candi\\Learning\\ChronosNote\\src\\server\\ChronosNote.Core\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -46,6 +46,78 @@
       "frameworks": {
         "net8.0": {
           "targetAlias": "net8.0",
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.422/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "C:\\Users\\Candi\\Learning\\ChronosNote\\src\\server\\ChronosNote.Infrastructure\\ChronosNote.Infrastructure.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\Users\\Candi\\Learning\\ChronosNote\\src\\server\\ChronosNote.Infrastructure\\ChronosNote.Infrastructure.csproj",
+        "projectName": "ChronosNote.Infrastructure",
+        "projectPath": "C:\\Users\\Candi\\Learning\\ChronosNote\\src\\server\\ChronosNote.Infrastructure\\ChronosNote.Infrastructure.csproj",
+        "packagesPath": "C:\\Users\\Candi\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\Candi\\Learning\\ChronosNote\\src\\server\\ChronosNote.Infrastructure\\obj\\",
+        "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
+        "configFilePaths": [
+          "C:\\Users\\Candi\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config"
+        ],
+        "originalTargetFrameworks": [
+          "net8.0"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net8.0": {
+            "targetAlias": "net8.0",
+            "projectReferences": {
+              "C:\\Users\\Candi\\Learning\\ChronosNote\\src\\server\\ChronosNote.Core\\ChronosNote.Core.csproj": {
+                "projectPath": "C:\\Users\\Candi\\Learning\\ChronosNote\\src\\server\\ChronosNote.Core\\ChronosNote.Core.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        }
+      },
+      "frameworks": {
+        "net8.0": {
+          "targetAlias": "net8.0",
+          "dependencies": {
+            "Microsoft.EntityFrameworkCore.Sqlite": {
+              "target": "Package",
+              "version": "[8.*, )"
+            }
+          },
           "imports": [
             "net461",
             "net462",
