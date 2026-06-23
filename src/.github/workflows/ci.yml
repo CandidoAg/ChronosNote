@@ -1,0 +1,84 @@
+name: ChronosNote CI Pipeline
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master, develop ]
+
+jobs:
+  # 🖥️ BACKEND JOB: .NET 8 Compilation & Testing
+  backend-validation:
+    name: Backend Verification (.NET)
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Source Code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET 8 SDK
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Restore NuGet Dependencies
+      run: dotnet restore ChronosNote.sln
+
+    - name: Build Backend (Release Mode)
+      run: dotnet build ChronosNote.sln --configuration Release --no-restore
+
+    - name: Run Backend Unit Tests
+      # It will pass successfully even with 0% coverage for now
+      run: dotnet test ChronosNote.sln --configuration Release --no-build --verbosity normal
+
+  # 🎨 FRONTEND JOB: Node + pnpm Assets Build
+  frontend-validation:
+    name: Frontend Verification & Asset Creation (Vite)
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Source Code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: Install pnpm
+      uses: pnpm/action-setup@v3
+      with:
+        version: 9 # Matches modern Monorepo environments
+
+    - name: Get pnpm Store Directory
+      id: pnpm-cache
+      shell: bash
+      run: |
+        echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+    - name: Cache pnpm Dependencies
+      uses: actions/cache@v4
+      with:
+        path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+        key: ${{ runner.os }}-pnpm-store-${{ hashFiles('src/client/pnpm-lock.yaml') }}
+        restore-keys: |
+          ${{ runner.os }}-pnpm-store-
+
+    - name: Install Dependencies
+      run: pnpm --filter client install
+
+    - name: Run Linter / Code Formatting
+      run: pnpm --filter client lint
+      continue-on-error: true # Warning only, won't block the build during transitional phase
+
+    - name: Compile & Production Asset Creation
+      # This generates the compiled static files (JS, CSS via Tailwind v4) in the dist/ folder
+      run: pnpm --filter client build
+
+    # 📦 Artifact Upload: Saves assets only if all previous steps passed
+    - name: Upload Production Assets Bundle
+      uses: actions/upload-artifact@v4
+      with:
+        name: chronosnote-frontend-assets
+        path: src/client/dist/
+        retention-days: 7
