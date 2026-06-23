@@ -38,3 +38,7 @@ src/server/**/out/
 # --- OS generated files ---
 .DS_Store
 Thumbs.db
+
+# Guardar configuraciones locales del servidor
+*.env
+!*.env.example

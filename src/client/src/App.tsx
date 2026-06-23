@@ -1,23 +1,35 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import { AuthPage } from './pages/AuthPage';
 import { MainLayout } from './layouts/MainLayout';
 import { Editor } from './components/Editor';
 import { Sidebar } from './components/Sidebar'; 
+import { SettingsModal } from './components/SettingsModal'; 
+import { translations } from './utils/translations';
 import type { Note } from './types/note.types'; 
 
 const API_URL = 'http://localhost:5155/api/notes';
 
-function App() {
+function WorkspaceContent() {
+  const { token, email, language } = useAuth(); 
   const [notes, setNotes] = useState<Note[]>([]);
   const [activeNote, setActiveNote] = useState<Note | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
+  const t = translations[language] || translations['en'];
 
   useEffect(() => {
-    fetchNotes();
-  }, []);
+    if (token) {
+      fetchNotes();
+    }
+  }, [token]);
 
   const fetchNotes = async () => {
     try {
-      const response = await fetch(API_URL);
+      const response = await fetch(API_URL, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
       if (response.ok) {
         const data = await response.json();
         setNotes(data);
@@ -34,7 +46,10 @@ function App() {
     try {
       const response = await fetch(API_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}` 
+        },
         body: JSON.stringify({ title: '', contentJson: '{"type":"doc","content":[]}' })
       });
 
@@ -62,16 +77,15 @@ function App() {
     try {
       const response = await fetch(`${API_URL}/${activeNote.id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: updatedTitle,
-          contentJson: updatedJson
-        })
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}` 
+        },
+        body: JSON.stringify({ title: updatedTitle, contentJson: updatedJson })
       });
 
       if (response.ok) {
         const savedNote = await response.json();
-        
         setNotes(notes.map(n => n.id === savedNote.id ? savedNote : n));
         setActiveNote(savedNote);
       }
@@ -83,20 +97,18 @@ function App() {
   };
 
   const handleDeleteNote = async (id: string, e: React.MouseEvent) => {
-    e.stopPropagation(); // Evita que al hacer clic en borrar se seleccione la nota
-    
-    if (!confirm("Are you sure you want to delete this page?")) return;
+    e.stopPropagation(); 
+    if (!confirm(t.confirmDelete)) return;
 
     try {
       const response = await fetch(`${API_URL}/${id}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
       });
 
       if (response.ok) {
         const updatedNotes = notes.filter(n => n.id !== id);
         setNotes(updatedNotes);
-        
-        // Si borramos la nota activa, limpiamos el editor o seleccionamos la primera disponible
         if (activeNote?.id === id) {
           setActiveNote(updatedNotes.length > 0 ? updatedNotes[0] : null);
         }
@@ -106,56 +118,69 @@ function App() {
     }
   };
 
-return (
+  return (
     <MainLayout>
-      {/* Usamos h-screen completo y quitamos los fixed innecesarios */}
-      <div className="flex h-screen w-full overflow-hidden">
+      <div className="flex h-screen w-full overflow-hidden bg-white dark:bg-[#191919] transition-colors">
         
-        {/* Sidebar: Se queda en su sitio de forma natural */}
         <Sidebar 
           notes={notes}
           activeNoteId={activeNote?.id || null}
           onSelectNote={handleSelectNote}
           onCreateNote={handleCreateNote}
           onDeleteNote={handleDeleteNote}
+          onOpenSettings={() => setIsSettingsOpen(true)}
         />
 
-        {/* Workspace: Ocupa todo el espacio restante y tiene su propio scroll independiente */}
-        <div className="flex-1 h-full overflow-y-auto px-14 py-10 bg-white">
+        <div className="flex-1 h-full overflow-y-auto px-14 py-10 bg-white dark:bg-[#1e1e1e] transition-colors">
           <div className="max-w-4xl mx-auto">
             {activeNote ? (
               <>
-                {/* Estado de guardado discreto arriba a la derecha */}
-                <div className="flex justify-end text-xs text-gray-400 h-6">
-                  {isSaving ? 'Saving changes...' : 'Saved to SQLite'}
+                <div className="flex justify-between items-center text-xs text-gray-400 dark:text-gray-500 h-6 mb-4 select-none">
+                  <span className="truncate max-w-50">{t.loggedInAs} <strong className="text-gray-600 dark:text-gray-400">{email}</strong></span>
+                  <div>
+                    <span>{isSaving ? t.savingStatus : t.savedStatus}</span>
+                  </div>
                 </div>
 
-                {/* Input de Título */}
                 <input 
                   type="text" 
-                  placeholder="Untitled" 
+                  placeholder={t.untitled} 
                   value={activeNote.title}
                   onChange={(e) => handleUpdateNote(e.target.value, activeNote.contentJson)}
-                  className="w-full text-4xl font-bold text-gray-900 mb-6 bg-transparent border-none outline-none placeholder-gray-300"
+                  className="w-full text-4xl font-bold text-gray-900 dark:text-white mb-6 bg-transparent border-none outline-none placeholder-gray-300 dark:placeholder-gray-700"
                 />
                 
-                {/* Editor de Tiptap */}
                 <Editor 
                   initialContent={activeNote.contentJson} 
                   onChange={(json) => handleUpdateNote(activeNote.title, json)} 
                 />
               </>
             ) : (
-              <div className="flex flex-col items-center justify-center h-[60vh] text-gray-400">
+              <div className="flex flex-col items-center justify-center h-[60vh] text-gray-400 dark:text-gray-600 select-none">
                 <span className="text-4xl mb-2">👋</span>
-                <p>Select a page or create a new one to start writing.</p>
+                <p>{t.emptyState}</p>
               </div>
             )}
           </div>
         </div>
 
+        <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
+
       </div>
     </MainLayout>
+  );
+}
+
+const AppContent: React.FC = () => {
+  const { token } = useAuth()
+  return !token ? <AuthPage /> : <WorkspaceContent />;
+};
+
+function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 }
 

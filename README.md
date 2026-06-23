@@ -19,6 +19,8 @@ This project is split into focused development phases to track progress and arch
 * [x] Build DB Schema for Rich Text Notes.
 * [x] Integrate **TipTap/Lexical** editor into the React frontend.
 * [x] Implement full CRUD API endpoints for real-time document autosaving.
+* [x] Implement **JWT Authentication & User Management** (Secure private notes per user).
+* [X] Design web identity and customize global asset branding (**Favicon & Web App App-Icon**).
 
 ### 🔲 Phase 2: Task Scheduler Integration via Hangfire
 * [ ] Inject **Hangfire** backed by SQLite for background queues.
@@ -30,6 +32,12 @@ This project is split into focused development phases to track progress and arch
 * [ ] Set up local integration with **Ollama** using lightweight models (`Llama-3.2-3b` or `Qwen2.5-1.5B`).
 * [ ] Code advanced system prompting in .NET to enforce strict JSON schemas for unstructured text processing.
 * [ ] Build contextual context-menus in the UI: "Summarize text", "Extract Actionable Items", and "Improve Tone".
+
+### 🔲 Phase 4: Production Readiness & Automated Testing
+* [ ] **Backend Unit & Integration Tests**: Setup `xUnit` and `FluentAssertions` to validate JWT authorization mechanics, isolated note multi-tenancy, and unstructured text token extraction algorithms.
+* [ ] **Hangfire Pipeline Mocking**: Write deterministic integration tests to assert that custom slash commands properly queue background workers without dropping scheduled jobs.
+* [ ] **Frontend Component & E2E Testing**: Add `Vitest` and `React Testing Library` to verify context reactivity (Theme switches, authentication handshakes, and responsive Sidebar state changes).
+* [ ] **SQLite Concurrency Profiling**: Run load thresholds to verify that concurrent real-time document autosaving handles database write locks without throwing transient exceptions.
 
 ---
 

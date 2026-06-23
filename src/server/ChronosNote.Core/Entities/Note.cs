@@ -1,21 +1,17 @@
-namespace ChronosNote.Core.Entities;
+using System;
 
-public class Note
+namespace ChronosNote.Core.Entities // Asegúrate de que apunte a tu namespace real
 {
-    public Guid Id { get; set; }
-    public string Title { get; set; } = string.Empty;
-    
-    // This will store the rich-text JSON structure from TipTap/Notion editor
-    public string ContentJson { get; set; } = "{}";
-    
-    public DateTime CreatedAt { get; set; }
-    public DateTime UpdatedAt { get; set; }
-
-    // Constructor to clean up initialization and enforce baseline dates
-    public Note()
+    public class Note
     {
-        Id = Guid.NewGuid();
-        CreatedAt = DateTime.UtcNow;
-        UpdatedAt = DateTime.UtcNow;
+        public Guid Id { get; set; }
+        public string Title { get; set; } = string.Empty;
+        public string ContentJson { get; set; } = "{\"type\":\"doc\",\"content\":[]}";
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+
+        // --- NUEVAS PROPIEDADES PARA AUTH ---
+        public Guid UserId { get; set; }
+        public User? User { get; set; }
     }
 }

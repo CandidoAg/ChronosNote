@@ -1,11 +1,14 @@
+using System.Security.Claims;
 using ChronosNote.Api.Dtos;
 using ChronosNote.Core.Entities;
 using ChronosNote.Infrastructure.Persistence;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace ChronosNote.Api.Controllers;
 
+[Authorize] 
 [ApiController]
 [Route("api/[controller]")]
 public class NotesController : ControllerBase
@@ -24,12 +27,15 @@ public class NotesController : ControllerBase
         if (dto == null)
             return BadRequest("Payload cannot be null");
 
+        var userId = GetUserId();
+
         var note = new Note
         {
             Title = string.IsNullOrEmpty(dto.Title) ? "Untitled" : dto.Title,
             ContentJson = dto.ContentJson,
             CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
+            UpdatedAt = DateTime.UtcNow,
+            UserId = userId 
         };
 
         _context.Notes.Add(note);
@@ -42,7 +48,11 @@ public class NotesController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAllNotes()
     {
+        var userId = GetUserId();
+
+        // 🔑 Only fetch notes that belong to the currently logged-in user
         var notes = await _context.Notes
+            .Where(n => n.UserId == userId)
             .OrderByDescending(n => n.UpdatedAt)
             .ToListAsync();
             
@@ -53,9 +63,14 @@ public class NotesController : ControllerBase
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetNoteById(Guid id)
     {
-        var note = await _context.Notes.FindAsync(id);
+        var userId = GetUserId();
+
+        // 🔑 Query the note while ensuring ownership matching
+        var note = await _context.Notes
+            .FirstOrDefaultAsync(n => n.Id == id && n.UserId == userId);
+
         if (note == null)
-            return NotFound($"Note with ID {id} not found.");
+            return NotFound($"Note not found or you don't have access.");
 
         return Ok(note);
     }
@@ -67,14 +82,18 @@ public class NotesController : ControllerBase
         if (dto == null)
             return BadRequest("Payload cannot be null");
 
-        var note = await _context.Notes.FindAsync(id);
-        if (note == null)
-            return NotFound($"Note with ID {id} not found.");
+        var userId = GetUserId();
 
-        // Mapeamos los datos del DTO de actualización
+        // 🔑 Ensure the user can only modify their own notes
+        var note = await _context.Notes
+            .FirstOrDefaultAsync(n => n.Id == id && n.UserId == userId);
+
+        if (note == null)
+            return NotFound($"Note not found or you don't have access.");
+
         note.Title = string.IsNullOrEmpty(dto.Title) ? "Untitled" : dto.Title;
         note.ContentJson = dto.ContentJson;
-        note.UpdatedAt = DateTime.UtcNow; // Registramos cuándo se editó
+        note.UpdatedAt = DateTime.UtcNow; 
 
         await _context.SaveChangesAsync();
         return Ok(note);
@@ -84,13 +103,31 @@ public class NotesController : ControllerBase
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> DeleteNote(Guid id)
     {
-        var note = await _context.Notes.FindAsync(id);
+        var userId = GetUserId();
+
+        // 🔑 Ensure the user can only delete their own notes
+        var note = await _context.Notes
+            .FirstOrDefaultAsync(n => n.Id == id && n.UserId == userId);
+
         if (note == null)
-            return NotFound($"Note with ID {id} not found.");
+            return NotFound($"Note not found or you don't have access.");
 
         _context.Notes.Remove(note);
         await _context.SaveChangesAsync();
 
-        return NoContent(); // Retorna 204 sin contenido, estándar para DELETE exitosos
+        return NoContent(); 
+    }
+
+    /// <summary>
+    /// 🔒 Safely extracts the User ID Guid from the current JWT identity claims
+    /// </summary>
+    private Guid GetUserId()
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+        {
+            throw new InvalidOperationException("User ID claim is missing or invalid in the current security context.");
+        }
+        return userId;
     }
 }
