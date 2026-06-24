@@ -4,11 +4,12 @@ import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
 
 interface EditorProps {
-  initialContent?: string; // Ahora sí lo usamos obligatoriamente
+  noteId: string; 
+  initialContent?: string;
   onChange: (contentJson: string) => void;
 }
 
-export const Editor: React.FC<EditorProps> = ({ initialContent, onChange }) => {
+export const Editor: React.FC<EditorProps> = ({ noteId, initialContent, onChange }) => {
   const editor = useEditor({
     extensions: [
       StarterKit,
@@ -17,13 +18,40 @@ export const Editor: React.FC<EditorProps> = ({ initialContent, onChange }) => {
         emptyEditorClass: 'is-editor-empty',
       }),
     ],
-    // Cargamos el JSON inicial si existe, si no, vacío
     content: initialContent ? JSON.parse(initialContent) : '', 
     editorProps: {
       attributes: {
-        // Añadimos 'prose max-w-none' para activar la visualización de los estilos Markdown (títulos, listas, etc.)
         class: 'prose max-w-none focus:outline-none min-h-[300px] text-gray-800 leading-relaxed text-lg w-full',
       },
+      handleKeyDown: (view, event) => {
+        if (event.key === 'Enter' && !event.shiftKey) {
+          const { state } = view;
+          const { selection } = state;
+          const { $from } = selection;
+          
+          const currentLineText = $from.nodeBefore?.textContent || $from.parent.textContent || "";
+
+          if (currentLineText.trim().startsWith('/remind ')) {
+            event.preventDefault(); 
+
+            console.log(`[Frontend] ¡Comando /remind interceptado!: "${currentLineText}"`);
+
+            const parsedNoteId = parseInt(noteId) || 1; 
+            fetch(`http://localhost:5155/api/Reminders/test-slash?noteId=${parsedNoteId}&text=${encodeURIComponent(currentLineText.trim())}`, {
+              method: 'POST'
+            }).catch(err => console.error("Error enviando recordatorio:", err));
+
+            view.dispatch(
+              state.tr.delete($from.start(), $from.end())
+            );
+            
+            editor?.commands.insertContent('<p></p>');
+            
+            return true;
+          }
+        }
+        return false;
+      }
     },
     onUpdate: ({ editor }) => {
       const jsonString = JSON.stringify(editor.getJSON());
@@ -31,7 +59,6 @@ export const Editor: React.FC<EditorProps> = ({ initialContent, onChange }) => {
     },
   });
 
-  // EFECTO CRUCIAL: Si cambias de nota en la barra lateral, este bloque actualiza el lienzo del editor
   useEffect(() => {
     if (editor && initialContent) {
       const currentContent = JSON.stringify(editor.getJSON());

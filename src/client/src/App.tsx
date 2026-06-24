@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, createContext, useContext } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { AuthPage } from './pages/AuthPage';
 import { MainLayout } from './layouts/MainLayout';
@@ -7,8 +7,142 @@ import { Sidebar } from './components/Sidebar';
 import { SettingsModal } from './components/SettingsModal'; 
 import { translations } from './utils/translations';
 import type { Note } from './types/note.types'; 
+import * as signalR from '@microsoft/signalr';
 
 const API_URL = 'http://localhost:5155/api/notes';
+
+// Interfaz para estructurar nuestros Toasts visuales
+interface ToastMessage {
+  id: string;
+  message: string;
+  noteId: number;
+}
+
+// =========================================================================
+// ⏰ PROVIDER DE NOTIFICACIONES EN TIEMPO REAL (SIGNALR + TAILWIND TOASTS)
+// =========================================================================
+const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { token } = useAuth();
+  const [toasts, setToasts] = useState<ToastMessage[]>([]);
+
+  const removeToast = (id: string) => {
+    setToasts((prev) => prev.filter((toast) => toast.id !== id));
+  };
+
+  useEffect(() => {
+    if (!token) return;
+
+    let isMounted = true;
+    let connection: signalR.HubConnection | null = null;
+
+    const startSignalR = async () => {
+      connection = new signalR.HubConnectionBuilder()
+        .withUrl('http://localhost:5155/hubs/notifications', {
+          withCredentials: true 
+        })
+        .withAutomaticReconnect()
+        .build();
+
+      try {
+        await connection.start();
+        
+        if (!isMounted) {
+          await connection.stop();
+          return;
+        }
+
+        console.log('[SignalR] Conectado con éxito al Hub de Notificaciones');
+
+        connection.on('ReceiveReminderAlert', (data: { noteId: number; message: string; timestamp: string }) => {
+          console.log('[SignalR] ¡Alerta de recordatorio recibida!', data);
+          
+          const id = Math.random().toString(36).substring(2, 9);
+          const newToast: ToastMessage = {
+            id,
+            message: data.message,
+            noteId: data.noteId
+          };
+
+          setToasts((prev) => [...prev, newToast]);
+
+          // Auto-eliminar a los 5 segundos
+          setTimeout(() => {
+            removeToast(id);
+          }, 5000);
+        });
+
+      } catch (err: any) {
+        // Silenciamos el aborto por StrictMode, logueamos cualquier otro error legítimo
+        if (isMounted && err?.name !== 'AbortError') {
+          console.error('[SignalR] Error al conectar con SignalR:', err);
+        }
+      }
+    };
+
+    startSignalR();
+
+    return () => {
+      isMounted = false;
+      if (connection) {
+        connection.off('ReceiveReminderAlert');
+        connection.stop().catch(() => {});
+      }
+    };
+  }, [token]);
+
+  return (
+    <>
+      {children}
+
+      {/* 🎨 CONTENEDOR FLOTANTE DE NOTIFICACIONES */}
+      <div className="fixed top-4 right-4 z-9999 flex flex-col gap-3 max-w-sm w-full pointer-events-none">
+        {toasts.map((toast) => (
+          <div
+            key={toast.id}
+            className="pointer-events-auto flex items-start gap-3 w-full p-4 rounded-xl shadow-lg border border-gray-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-gray-900 dark:text-white transform transition-all duration-300 animate-slide-in-right"
+          >
+            <div className="flex items-center justify-center h-8 w-8 rounded-lg bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 shrink-0 text-xl">
+              ⏰
+            </div>
+            
+            <div className="flex-1 pt-0.5">
+              <p className="text-xs font-semibold text-purple-600 dark:text-purple-400 uppercase tracking-wider">
+                Recordatorio de Chronos
+              </p>
+              <p className="text-sm font-medium mt-0.5 text-gray-700 dark:text-gray-300">
+                {toast.message}
+              </p>
+            </div>
+
+            <button
+              onClick={() => removeToast(toast.id)}
+              className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors shrink-0 text-xs p-1"
+            >
+              ✕
+            </button>
+          </div>
+        ))}
+      </div>
+
+      <style>{`
+        @keyframes slideInRight {
+          from {
+            transform: translateX(100%);
+            opacity: 0;
+          }
+          to {
+            transform: translateX(0);
+            opacity: 1;
+          }
+        }
+        .animate-slide-in-right {
+          animation: slideInRight 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+      `}</style>
+    </>
+  );
+};
+
 
 function WorkspaceContent() {
   const { token, email, language } = useAuth(); 
@@ -151,6 +285,7 @@ function WorkspaceContent() {
                 />
                 
                 <Editor 
+                  noteId={activeNote.id} 
                   initialContent={activeNote.contentJson} 
                   onChange={(json) => handleUpdateNote(activeNote.title, json)} 
                 />
@@ -179,7 +314,9 @@ const AppContent: React.FC = () => {
 function App() {
   return (
     <AuthProvider>
-      <AppContent />
+      <NotificationProvider>
+        <AppContent />
+      </NotificationProvider>
     </AuthProvider>
   );
 }

@@ -23,10 +23,10 @@ This project is split into focused development phases to track progress and arch
 * [X] Design web identity and customize global asset branding (**Favicon & Web App App-Icon**).
 
 ### 🔲 Phase 2: Task Scheduler Integration via Hangfire
-* [ ] Inject **Hangfire** backed by SQLite for background queues.
-* [ ] Create custom text/slash commands in the editor to capture triggers (e.g., `/remind Monday 10am`).
-* [ ] Build background workers using `BackgroundJob.Schedule` to dispatch notifications.
-* [ ] Setup **SignalR** hubs for real-time frontend alert dispatching.
+* [x] Inject **Hangfire** backed by SQLite for background queues.
+* [x] Create custom text/slash commands in the editor to capture triggers (e.g., `/remind Monday 10am`).
+* [x] Build background workers using `BackgroundJob.Schedule` to dispatch notifications.
+* [x] Setup **SignalR** hubs for real-time frontend alert dispatching.
 
 ### 🔲 Phase 3: Privacy-First Local AI Engine (Ollama)
 * [ ] Set up local integration with **Ollama** using lightweight models (`Llama-3.2-3b` or `Qwen2.5-1.5B`).

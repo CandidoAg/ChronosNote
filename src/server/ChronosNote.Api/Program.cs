@@ -3,6 +3,13 @@ using ChronosNote.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Hangfire;
+using Hangfire.Storage.SQLite;
+using ChronosNote.Core.Interfaces;
+using ChronosNote.Core.Services;
+using ChronosNote.Infrastructure.Services;
+using ChronosNote.Api.Hubs;
+using ChronosNote.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -50,11 +57,27 @@ builder.Services.AddCors(options =>
     {
         policy.WithOrigins("http://localhost:5173")
               .AllowAnyHeader()
-              .AllowAnyMethod();
+              .AllowAnyMethod()
+              .AllowCredentials();
     });
 });
 
+builder.Services.AddHangfire(configuration => configuration
+    .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+    .UseSimpleAssemblyNameTypeSerializer()
+    .UseRecommendedSerializerSettings()
+    .UseSQLiteStorage(builder.Configuration.GetConnectionString("HangfireConnection") ?? "../../../hangfire.db"));
+
+builder.Services.AddHangfireServer();
+builder.Services.AddScoped<IBackgroundJobQueue, HangfireJobQueue>();
+builder.Services.AddScoped<IReminderParser, ReminderParser>();
+builder.Services.AddScoped<IReminderService, ReminderService>();
+builder.Services.AddScoped<INotificationService, SignalRNotificationService>();
+
+builder.Services.AddSignalR();
+
 var app = builder.Build();
+app.UseHangfireDashboard();
 
 if (app.Environment.IsDevelopment())
 {
@@ -68,7 +91,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-
+app.MapHub<NotificationHub>("/hubs/notifications");
 app.Urls.Add("http://localhost:5155");
 
 app.Run();

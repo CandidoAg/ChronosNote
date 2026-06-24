@@ -1,9 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "bXtyLonha54=",
+  "dgSpecHash": "90yeoFPvw5w=",
   "success": true,
   "projectFilePath": "C:\\Users\\Candi\\Learning\\ChronosNote\\src\\server\\ChronosNote.Infrastructure\\ChronosNote.Infrastructure.csproj",
   "expectedPackageFiles": [
+    "C:\\Users\\Candi\\.nuget\\packages\\hangfire.core\\1.8.23\\hangfire.core.1.8.23.nupkg.sha512",
     "C:\\Users\\Candi\\.nuget\\packages\\microsoft.data.sqlite.core\\8.0.28\\microsoft.data.sqlite.core.8.0.28.nupkg.sha512",
     "C:\\Users\\Candi\\.nuget\\packages\\microsoft.entityframeworkcore\\8.0.28\\microsoft.entityframeworkcore.8.0.28.nupkg.sha512",
     "C:\\Users\\Candi\\.nuget\\packages\\microsoft.entityframeworkcore.abstractions\\8.0.28\\microsoft.entityframeworkcore.abstractions.8.0.28.nupkg.sha512",
@@ -21,6 +22,7 @@
     "C:\\Users\\Candi\\.nuget\\packages\\microsoft.extensions.logging.abstractions\\8.0.2\\microsoft.extensions.logging.abstractions.8.0.2.nupkg.sha512",
     "C:\\Users\\Candi\\.nuget\\packages\\microsoft.extensions.options\\8.0.2\\microsoft.extensions.options.8.0.2.nupkg.sha512",
     "C:\\Users\\Candi\\.nuget\\packages\\microsoft.extensions.primitives\\8.0.0\\microsoft.extensions.primitives.8.0.0.nupkg.sha512",
+    "C:\\Users\\Candi\\.nuget\\packages\\newtonsoft.json\\11.0.1\\newtonsoft.json.11.0.1.nupkg.sha512",
     "C:\\Users\\Candi\\.nuget\\packages\\sqlitepclraw.bundle_e_sqlite3\\2.1.6\\sqlitepclraw.bundle_e_sqlite3.2.1.6.nupkg.sha512",
     "C:\\Users\\Candi\\.nuget\\packages\\sqlitepclraw.core\\2.1.6\\sqlitepclraw.core.2.1.6.nupkg.sha512",
     "C:\\Users\\Candi\\.nuget\\packages\\sqlitepclraw.lib.e_sqlite3\\2.1.6\\sqlitepclraw.lib.e_sqlite3.2.1.6.nupkg.sha512",
