@@ -13,7 +13,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
   
   const t = translations[language] || translations['en'];
 
-  // Sync internal form parameters with base layout contexts
   const [selectedColor, setSelectedColor] = useState(avatarColor);
   const [selectedUrl, setSelectedUrl] = useState(avatarUrl || '');
   const [selectedLang, setSelectedLang] = useState(language);
@@ -35,19 +34,17 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
     'bg-red-500', 'bg-amber-500', 'bg-pink-500', 'bg-gray-700'
   ];
 
-  // Atomic pipeline updates to prevent cross-site lag
   const handleSaveChange = (color: string, url: string, lang: string, dark: boolean) => {
     setSelectedColor(color);
     setSelectedUrl(url);
     setSelectedLang(lang);
     setSelectedDark(dark);
     
-    // Pass execution payload up to Context API handler
     updatePreferences(color, url, lang, dark);
   };
 
   return (
-    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-[100] animate-in fade-in duration-200">
+    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-100 animate-in fade-in duration-200">
       <div className="bg-white dark:bg-[#1e1e1e] w-full max-w-2xl h-[480px] rounded-xl shadow-2xl border border-gray-200 dark:border-[#2f2f2f] flex overflow-hidden animate-in zoom-in-95 duration-200 transition-colors">
         
         {/* Navigation Tab List */}

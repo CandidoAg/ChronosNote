@@ -87,7 +87,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
               alt="Profile" 
               className="w-6 h-6 rounded-full object-cover shadow-sm border border-gray-200 dark:border-gray-700 animate-in fade-in duration-200" 
               onError={(e) => {
-                // Safe fallback string if the hosted image link breaks or errors out
                 (e.target as HTMLImageElement).style.display = 'none';
               }}
             />

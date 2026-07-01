@@ -24,7 +24,6 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
         console.log('[SignalR] Conectado con éxito al Hub de Notificaciones');
         setIsConnected(true);
 
-        // 🔥 ESCUCHAR EL EVENTO DEL SERVIDOR
         connection.on('ReceiveReminderAlert', (data: { noteId: number; message: string; timestamp: string }) => {
           console.log('[SignalR] ¡Alerta de recordatorio recibida en tiempo real!', data);
           

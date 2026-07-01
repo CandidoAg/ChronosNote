@@ -11,16 +11,12 @@ import * as signalR from '@microsoft/signalr';
 
 const API_URL = 'http://localhost:5155/api/notes';
 
-// Interfaz para estructurar nuestros Toasts visuales
 interface ToastMessage {
   id: string;
   message: string;
   noteId: number;
 }
 
-// =========================================================================
-// ⏰ PROVIDER DE NOTIFICACIONES EN TIEMPO REAL (SIGNALR + TAILWIND TOASTS)
-// =========================================================================
 const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { token } = useAuth();
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
@@ -65,14 +61,12 @@ const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
           setToasts((prev) => [...prev, newToast]);
 
-          // Auto-eliminar a los 5 segundos
           setTimeout(() => {
             removeToast(id);
           }, 5000);
         });
 
       } catch (err: any) {
-        // Silenciamos el aborto por StrictMode, logueamos cualquier otro error legítimo
         if (isMounted && err?.name !== 'AbortError') {
           console.error('[SignalR] Error al conectar con SignalR:', err);
         }
@@ -94,7 +88,6 @@ const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     <>
       {children}
 
-      {/* 🎨 CONTENEDOR FLOTANTE DE NOTIFICACIONES */}
       <div className="fixed top-4 right-4 z-9999 flex flex-col gap-3 max-w-sm w-full pointer-events-none">
         {toasts.map((toast) => (
           <div

@@ -1,17 +1,16 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
-// 🔑 1. Definimos el tipo del contexto incluyendo la nueva propiedad avatarUrl
 interface AuthContextType {
   token: string | null;
   username: string | null;
   email: string | null;
   avatarColor: string;
-  avatarUrl: string; // <-- Nueva propiedad agregada de forma explícita
+  avatarUrl: string; 
   language: string;
   darkMode: boolean;
   login: (token: string, email: string, username: string, preferences?: any) => void;
   logout: () => void;
-  updatePreferences: (color: string, url: string, lang: string, dark: boolean) => Promise<void>; // <-- Ahora acepta 4 argumentos
+  updatePreferences: (color: string, url: string, lang: string, dark: boolean) => Promise<void>; 
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -21,13 +20,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [username, setUsername] = useState<string | null>(localStorage.getItem('chronos_username'));
   const [email, setEmail] = useState<string | null>(localStorage.getItem('chronos_email'));
   
-  // Estados de preferencias con valores seguros por defecto
   const [avatarColor, setAvatarColor] = useState<string>(localStorage.getItem('chronos_avatar') || 'bg-purple-600');
   const [avatarUrl, setAvatarUrl] = useState<string>(localStorage.getItem('chronos_avatar_url') || '');
   const [language, setLanguage] = useState<string>(localStorage.getItem('chronos_lang') || 'en');
   const [darkMode, setDarkMode] = useState<boolean>(localStorage.getItem('chronos_dark') === 'true');
 
-  // Efecto para sincronizar la clase 'dark' en el documento HTML de Tailwind
   useEffect(() => {
     if (darkMode) {
       document.documentElement.classList.add('dark');
@@ -36,7 +33,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [darkMode]);
 
-  // Al hacer login guardamos token, datos básicos y sus preferencias si vienen del servidor
   const login = (token: string, email: string, username: string, preferences?: any) => {
     localStorage.setItem('chronos_token', token);
     localStorage.setItem('chronos_email', email);
@@ -72,9 +68,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setDarkMode(false);
   };
 
-  // 🔑 2. Función optimizada con los 4 parámetros sincronizados con tu backend en .NET
   const updatePreferences = async (color: string, url: string, lang: string, dark: boolean) => {
-    // Sincronización instantánea local en UI
     localStorage.setItem('chronos_avatar', color);
     localStorage.setItem('chronos_avatar_url', url);
     localStorage.setItem('chronos_lang', lang);
@@ -85,7 +79,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setLanguage(lang);
     setDarkMode(dark);
 
-    // Sincronización en caliente con la base de datos remota SQLite
     if (token) {
       try {
         await fetch('http://localhost:5155/api/auth/preferences', { // Asegúrate de que este puerto coincida con tu backend

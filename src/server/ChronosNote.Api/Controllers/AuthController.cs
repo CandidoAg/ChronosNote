@@ -95,9 +95,8 @@ namespace ChronosNote.Api.Controllers
             if (user == null)
                 return NotFound(new { message = "User account not found." });
 
-            // 🔑 Updates security attributes cleanly
             user.AvatarColor = string.IsNullOrWhiteSpace(dto.AvatarColor) ? user.AvatarColor : dto.AvatarColor;
-            user.AvatarUrl = dto.AvatarUrl ?? string.Empty; // Safely save custom URL image links
+            user.AvatarUrl = dto.AvatarUrl ?? string.Empty; 
             user.Theme = dto.Theme == "dark" ? "dark" : "light";
             user.Language = (dto.Language == "es" || dto.Language == "fr") ? dto.Language : "en";
 

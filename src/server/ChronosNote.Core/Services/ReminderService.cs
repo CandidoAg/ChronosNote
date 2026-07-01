@@ -8,7 +8,7 @@ namespace ChronosNote.Core.Services
     {
         private readonly IBackgroundJobQueue _jobQueue;
         private readonly IReminderParser _parser;
-        private readonly INotificationService _notificationService; // 👈 Cambiado a nuestra interfaz
+        private readonly INotificationService _notificationService; 
 
         public ReminderService(
             IBackgroundJobQueue jobQueue, 

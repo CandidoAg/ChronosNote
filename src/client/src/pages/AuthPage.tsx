@@ -39,7 +39,6 @@ export const AuthPage: React.FC = () => {
         throw new Error(data.message || 'Something went wrong');
       }
 
-      // Mapeo seguro por si acaso
       const userToken = data.token || data.Token;
       const userEmail = data.email || data.Email;
       const userUsername = data.username || data.Username;

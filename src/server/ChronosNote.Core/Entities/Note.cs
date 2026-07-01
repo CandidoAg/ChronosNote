@@ -10,7 +10,6 @@ namespace ChronosNote.Core.Entities // Asegúrate de que apunte a tu namespace r
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
-        // --- NUEVAS PROPIEDADES PARA AUTH ---
         public Guid UserId { get; set; }
         public User? User { get; set; }
     }

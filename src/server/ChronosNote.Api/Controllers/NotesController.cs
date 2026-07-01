@@ -20,7 +20,6 @@ public class NotesController : ControllerBase
         _context = context;
     }
 
-    // 1. CREATE (POST: api/notes)
     [HttpPost]
     public async Task<IActionResult> CreateNote([FromBody] CreateNoteDto dto)
     {
@@ -44,13 +43,11 @@ public class NotesController : ControllerBase
         return Ok(note);
     }
 
-    // 2. READ ALL (GET: api/notes)
     [HttpGet]
     public async Task<IActionResult> GetAllNotes()
     {
         var userId = GetUserId();
 
-        // 🔑 Only fetch notes that belong to the currently logged-in user
         var notes = await _context.Notes
             .Where(n => n.UserId == userId)
             .OrderByDescending(n => n.UpdatedAt)
@@ -59,13 +56,11 @@ public class NotesController : ControllerBase
         return Ok(notes);
     }
 
-    // 3. READ ONE (GET: api/notes/{id})
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetNoteById(Guid id)
     {
         var userId = GetUserId();
 
-        // 🔑 Query the note while ensuring ownership matching
         var note = await _context.Notes
             .FirstOrDefaultAsync(n => n.Id == id && n.UserId == userId);
 
@@ -75,7 +70,6 @@ public class NotesController : ControllerBase
         return Ok(note);
     }
 
-    // 4. UPDATE (PUT: api/notes/{id})
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> UpdateNote(Guid id, [FromBody] UpdateNoteDto dto)
     {
@@ -99,7 +93,6 @@ public class NotesController : ControllerBase
         return Ok(note);
     }
     
-    // 5. DELETE (DELETE: api/notes/{id})
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> DeleteNote(Guid id)
     {
@@ -118,9 +111,6 @@ public class NotesController : ControllerBase
         return NoContent(); 
     }
 
-    /// <summary>
-    /// 🔒 Safely extracts the User ID Guid from the current JWT identity claims
-    /// </summary>
     private Guid GetUserId()
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;

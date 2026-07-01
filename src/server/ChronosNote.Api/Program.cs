@@ -13,8 +13,6 @@ using ChronosNote.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Cargar las variables de entorno forzando la ruta raíz del proyecto API
-// Esto evita que falle si ejecutas el proyecto desde carpetas superiores
 DotNetEnv.Env.Load(Path.Combine(Directory.GetCurrentDirectory(), ".env"));
 
 var jwtSecret = Environment.GetEnvironmentVariable("JWT_SECRET") 
@@ -22,7 +20,6 @@ var jwtSecret = Environment.GetEnvironmentVariable("JWT_SECRET")
 var jwtIssuer = Environment.GetEnvironmentVariable("JWT_ISSUER");
 var jwtAudience = Environment.GetEnvironmentVariable("JWT_AUDIENCE");
 
-// 2. Configurar la Autenticación JWT en el contenedor de servicios
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -45,9 +42,33 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c => 
+{
+    c.SwaggerDoc("v1", new() { Title = "ChronosNote API", Version = "v1" });
 
-// Configuración de la DB SQLite
+    var securityScheme = new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+    {
+        Name = "JWT Authentication",
+        Description = "Introduce tu token JWT de la siguiente manera: Bearer {tu_token}",
+        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+        Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
+        Scheme = "Bearer", 
+        BearerFormat = "JWT",
+        Reference = new Microsoft.OpenApi.Models.OpenApiReference
+        {
+            Id = "Bearer",
+            Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme
+        }
+    };
+
+    c.AddSecurityDefinition(securityScheme.Reference.Id, securityScheme);
+
+    c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+    {
+        { securityScheme, Array.Empty<string>() }
+    });
+});
+
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -73,6 +94,7 @@ builder.Services.AddScoped<IBackgroundJobQueue, HangfireJobQueue>();
 builder.Services.AddScoped<IReminderParser, ReminderParser>();
 builder.Services.AddScoped<IReminderService, ReminderService>();
 builder.Services.AddScoped<INotificationService, SignalRNotificationService>();
+builder.Services.AddHttpClient<IAIEngineService, OllamaAIEngineService>();
 
 builder.Services.AddSignalR();
 
