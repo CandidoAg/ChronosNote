@@ -28,7 +28,6 @@ jobs:
       run: dotnet build ChronosNote.sln --configuration Release --no-restore
 
     - name: Run Backend Unit Tests with Coverage
-      # Formateamos exactamente igual que en local usando comillas para asegurar exclusiones en Linux
       run: |
         dotnet test ChronosNote.sln \
           --configuration Release \
@@ -36,7 +35,7 @@ jobs:
           --verbosity normal \
           --collect:"XPlat Code Coverage" \
           --results-directory ./TestResults \
-          -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover \
+          -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura,opencover \
              DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.ExcludeByFile="**/Program.cs,**/*Migrations/*.cs"
 
     - name: Generate Code Coverage Report Summary
