@@ -42,3 +42,11 @@ Thumbs.db
 # Guardar configuraciones locales del servidor
 *.env
 !*.env.example
+
+# Test results and coverage reports
+**/TestResults/
+
+# --- .NET Build & Outputs ---
+**/bin/
+**/obj/
+**/out/

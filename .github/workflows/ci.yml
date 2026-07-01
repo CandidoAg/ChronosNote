@@ -7,7 +7,7 @@ on:
     branches: [ main, master, develop ]
 
 jobs:
-  # 🖥️ BACKEND JOB: .NET 8 Compilation & Testing
+  # 🖥️ BACKEND JOB: .NET 8 Compilation, Testing & Coverage Validation
   backend-validation:
     name: Backend Verification (.NET)
     runs-on: ubuntu-latest
@@ -27,9 +27,31 @@ jobs:
     - name: Build Backend (Release Mode)
       run: dotnet build ChronosNote.sln --configuration Release --no-restore
 
-    - name: Run Backend Unit Tests
-      # It will pass successfully even with 0% coverage for now
-      run: dotnet test ChronosNote.sln --configuration Release --no-build --verbosity normal
+    - name: Run Backend Unit Tests with Coverage
+      # Formateamos exactamente igual que en local usando comillas para asegurar exclusiones en Linux
+      run: |
+        dotnet test ChronosNote.sln \
+          --configuration Release \
+          --no-build \
+          --verbosity normal \
+          --collect:"XPlat Code Coverage" \
+          --results-directory ./TestResults \
+          -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover \
+             DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.ExcludeByFile="**/Program.cs,**/*Migrations/*.cs"
+
+    - name: Generate Code Coverage Report Summary
+      uses: irongut/CodeCoverageSummary@v1.3.0
+      with:
+        filename: 'TestResults/**/*.xml'
+        badge: true
+        fail_below_min: true 
+        format: markdown
+        output: both
+        thresholds: '85 80' 
+
+    - name: Publish Coverage Summary to GitHub Action Summary
+      if: always() # Se asegura de mostrar el resumen aunque los tests fallen
+      run: cat code-coverage-results.md >> $GITHUB_STEP_SUMMARY
 
   # 🎨 FRONTEND JOB: Node + pnpm Assets Build
   frontend-validation:
@@ -48,7 +70,7 @@ jobs:
     - name: Install pnpm
       uses: pnpm/action-setup@v3
       with:
-        version: 9 # Matches modern Monorepo environments
+        version: 9
 
     - name: Get pnpm Store Directory
       id: pnpm-cache
@@ -69,13 +91,11 @@ jobs:
 
     - name: Run Linter / Code Formatting
       run: pnpm --filter client lint
-      continue-on-error: true # Warning only, won't block the build during transitional phase
+      continue-on-error: true
 
     - name: Compile & Production Asset Creation
-      # This generates the compiled static files (JS, CSS via Tailwind v4) in the dist/ folder
       run: pnpm --filter client build
 
-    # 📦 Artifact Upload: Saves assets only if all previous steps passed
     - name: Upload Production Assets Bundle
       uses: actions/upload-artifact@v4
       with:
