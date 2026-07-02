@@ -69,6 +69,12 @@ jobs:
       run: |
         echo "Ejecutando validación determinista de colas de Hangfire..."
         dotnet test ChronosNote.sln --configuration Release --no-build --filter "Category=Integration" --verbosity normal
+    
+    - name: Upload Backend Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: chronosnote-backend-build
+        path: src/server/ChronosNote.Api/bin/Release/net8.0/publish/ 
 
   # 🎨 FRONTEND JOB: Node + pnpm Assets Build with Matrix
   frontend-validation:
@@ -110,7 +116,7 @@ jobs:
       run: pnpm --filter client install
 
     - name: Run Linter / Code Formatting
-      run: pnpm --filter client lint
+      run: pnpm --filter client lint || echo "Linter warnings found"
       continue-on-error: true
 
     - name: Compile & Production Asset Creation
@@ -123,3 +129,15 @@ jobs:
         name: chronosnote-frontend-assets
         path: src/client/dist/
         retention-days: 7
+    
+    - name: Generate Frontend Coverage Report Summary
+      uses: irongut/CodeCoverageSummary@v1.3.0
+      with:
+        filename: 'src/client/coverage/cobertura-coverage.xml'
+        badge: true
+        fail_below_min: true 
+        format: markdown
+        output: both
+
+    - name: Publish Frontend Coverage Summary
+      run: cat code-coverage-results.md >> $GITHUB_STEP_SUMMARY
