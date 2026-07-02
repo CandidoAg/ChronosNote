@@ -1,25 +1,31 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useState, useEffect } from 'react';
+
+export interface UserPreferences {
+  avatarColor?: string;
+  avatarUrl?: string;
+  theme?: string;
+  language?: string;
+}
 
 interface AuthContextType {
   token: string | null;
   username: string | null;
   email: string | null;
   avatarColor: string;
-  avatarUrl: string; 
+  avatarUrl: string;
   language: string;
   darkMode: boolean;
-  login: (token: string, email: string, username: string, preferences?: any) => void;
+  login: (token: string, email: string, username: string, preferences?: UserPreferences) => void;
   logout: () => void;
-  updatePreferences: (color: string, url: string, lang: string, dark: boolean) => Promise<void>; 
+  updatePreferences: (color: string, url: string, lang: string, dark: boolean) => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [token, setToken] = useState<string | null>(localStorage.getItem('chronos_token'));
   const [username, setUsername] = useState<string | null>(localStorage.getItem('chronos_username'));
   const [email, setEmail] = useState<string | null>(localStorage.getItem('chronos_email'));
-  
   const [avatarColor, setAvatarColor] = useState<string>(localStorage.getItem('chronos_avatar') || 'bg-purple-600');
   const [avatarUrl, setAvatarUrl] = useState<string>(localStorage.getItem('chronos_avatar_url') || '');
   const [language, setLanguage] = useState<string>(localStorage.getItem('chronos_lang') || 'en');
@@ -33,7 +39,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [darkMode]);
 
-  const login = (token: string, email: string, username: string, preferences?: any) => {
+  const login = (token: string, email: string, username: string, preferences?: UserPreferences) => {
     localStorage.setItem('chronos_token', token);
     localStorage.setItem('chronos_email', email);
     localStorage.setItem('chronos_username', username);
@@ -44,7 +50,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (preferences) {
       const { avatarColor, avatarUrl, theme, language } = preferences;
       const isDark = theme === 'dark';
-      
+
       localStorage.setItem('chronos_avatar', avatarColor || 'bg-purple-600');
       localStorage.setItem('chronos_avatar_url', avatarUrl || '');
       localStorage.setItem('chronos_lang', language || 'en');
@@ -73,7 +79,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.setItem('chronos_avatar_url', url);
     localStorage.setItem('chronos_lang', lang);
     localStorage.setItem('chronos_dark', String(dark));
-    
+
     setAvatarColor(color);
     setAvatarUrl(url);
     setLanguage(lang);
@@ -81,36 +87,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     if (token) {
       try {
-        await fetch('http://localhost:5155/api/auth/preferences', { // Asegúrate de que este puerto coincida con tu backend
+        await fetch('http://localhost:5155/api/auth/preferences', {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
           },
-          body: JSON.stringify({ 
-            avatarColor: color, 
-            avatarUrl: url, 
-            theme: dark ? 'dark' : 'light', 
-            language: lang 
+          body: JSON.stringify({
+            avatarColor: color,
+            avatarUrl: url,
+            theme: dark ? 'dark' : 'light',
+            language: lang
           })
         });
       } catch (err) {
-        console.error("No se pudieron sincronizar los ajustes con el servidor local:", err);
+        console.error(err);
       }
     }
   };
 
   return (
-    <AuthContext.Provider value={{ 
-      token, username, email, avatarColor, avatarUrl, language, darkMode, login, logout, updatePreferences 
+    <AuthContext.Provider value={{
+      token, username, email, avatarColor, avatarUrl, language, darkMode, login, logout, updatePreferences
     }}>
       {children}
     </AuthContext.Provider>
   );
-};
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) throw new Error('useAuth debe ser utilizado dentro de un AuthProvider');
-  return context;
 };

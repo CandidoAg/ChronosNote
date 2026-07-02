@@ -50,3 +50,6 @@ Thumbs.db
 **/bin/
 **/obj/
 **/out/
+
+# Ignorar reportes de cobertura de vitest
+src/client/coverage/

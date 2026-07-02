@@ -36,9 +36,9 @@ This project is split into focused development phases to track progress and arch
 ### 🔲 Phase 4: Production Readiness & Automated Testing (In Progress 🚀)
 * [x] **Backend Unit & Integration Tests**: Setup `xUnit` and `FluentAssertions` to validate JWT authorization mechanics, isolated note multi-tenancy, and unstructured text token extraction algorithms. (94% Line Coverage, 70% Branch Coverage locally).
 * [x] **Automated CI/CD Pipeline**: Integrated GitHub Actions (`ci.yml`) to automatically compile the monorepo, build Vite production assets, run unit tests, and enforce a strict **80% minimum coverage gate** before pull requests can be merged.
-* [ ] **Hangfire Pipeline Mocking**: Write deterministic integration tests to assert that custom slash commands properly queue background workers without dropping scheduled jobs.
+* [x] **Hangfire Pipeline Mocking**: Write deterministic integration tests to assert that custom slash commands properly queue background workers without dropping scheduled jobs.
 * [ ] **Frontend Component & E2E Testing**: Add `Vitest` and `React Testing Library` to verify context reactivity (Theme switches, authentication handshakes, and responsive Sidebar state changes).
-* [ ] **SQLite Concurrency Profiling**: Run load thresholds to verify that concurrent real-time document autosaving handles database write locks without throwing transient exceptions.
+* [x] **SQLite Concurrency Profiling**: Run load thresholds to verify that concurrent real-time document autosaving handles database write locks without throwing transient exceptions.
 
 ---
 

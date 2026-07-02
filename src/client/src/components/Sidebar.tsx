@@ -1,7 +1,7 @@
 import React from 'react';
 import type { Note } from '../types/note.types';
 import { Logo } from './Logo';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 import { translations } from '../utils/translations';
 
 interface SidebarProps {
@@ -79,7 +79,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       {/* User Footer Action Hub Layout */}
       <div className="flex items-center justify-between p-2 mt-auto border-t border-gray-200/60 dark:border-[#2f2f2f] shrink-0 bg-[#f7f7f5] dark:bg-[#191919] transition-colors">
-        <div className="flex items-center gap-2 truncate max-w-[140px]">
+        <div className="flex items-center gap-2 truncate max-w-35">
           {/* Conditional Avatar Display: Image URL Link vs Color Fallback */}
           {avatarUrl ? (
             <img 
