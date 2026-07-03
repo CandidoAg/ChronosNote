@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import * as signalR from '@microsoft/signalr';
+import { createNotificationConnection } from './NotificationUtils';
 
 interface NotificationContextType {
   isConnected: boolean;
@@ -11,28 +11,24 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
-    const connection = new signalR.HubConnectionBuilder()
-      .withUrl('http://localhost:5155/hubs/notifications', {
-        withCredentials: true 
-      })
-      .withAutomaticReconnect()
-      .build();
+    const connection = createNotificationConnection();
 
-    connection
-      .start()
-      .then(() => {
+    const startConnection = async () => {
+      try {
+        await connection.start();
         console.log('[SignalR] Conectado con éxito al Hub de Notificaciones');
         setIsConnected(true);
 
         connection.on('ReceiveReminderAlert', (data: { noteId: number; message: string; timestamp: string }) => {
-          console.log('[SignalR] ¡Alerta de recordatorio recibida en tiempo real!', data);
-          
+          console.log('[SignalR] ¡Alerta de recordatorio!', data);
           alert(`🚨 RECORDATORIO (Nota ${data.noteId}): ${data.message}`);
         });
-      })
-      .catch((err) => {
-        console.error('[SignalR] Error al conectar con el servidor:', err);
-      });
+      } catch (err) {
+        console.error('[SignalR] Error al conectar:', err);
+      }
+    };
+
+    startConnection();
 
     return () => {
       connection.off('ReceiveReminderAlert');

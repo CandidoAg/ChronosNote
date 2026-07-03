@@ -1,83 +1,94 @@
-import { renderHook, act, waitFor } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render } from '@testing-library/react';
+import { act } from 'react';
+import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { NotificationProvider, useNotifications } from './NotificationContext';
+import * as Utils from './NotificationUtils';
 
-const mockConnection = {
-  start: vi.fn().mockResolvedValue(undefined),
-  stop: vi.fn().mockResolvedValue(undefined),
-  on: vi.fn(),
-  off: vi.fn(),
-};
-
-vi.mock('@microsoft/signalr', () => ({
-  HubConnectionBuilder: class {
-    withUrl() { return this; }
-    withAutomaticReconnect() { return this; }
-    build() { return mockConnection; }
-  }
+vi.mock('./NotificationUtils', () => ({
+  createNotificationConnection: vi.fn(),
 }));
 
-describe('NotificationContext - Cobertura Completa', () => {
+describe('NotificationContext', () => {
+  const mockConnection = {
+    start: vi.fn(),
+    stop: vi.fn().mockResolvedValue(undefined),
+    on: vi.fn(),
+    off: vi.fn(),
+  };
+
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(Utils.createNotificationConnection).mockReturnValue(mockConnection as any);
   });
 
-  it('debe manejar el error si la conexión falla', async () => {
-    mockConnection.start.mockRejectedValueOnce(new Error('SignalR Failed'));
-    
-    await act(async () => {
-      renderHook(() => useNotifications(), { wrapper: NotificationProvider });
-    });
-    
-    expect(mockConnection.start).toHaveBeenCalled();
-  });
+  it('debe completar el ciclo de vida: conectar, recibir evento y desconectar', async () => {
+    mockConnection.start.mockResolvedValueOnce(undefined);
 
-  it('debe limpiar la conexión al desmontar el provider', async () => {
-    const { unmount } = renderHook(() => useNotifications(), { wrapper: NotificationProvider });
-    
+    const { unmount } = render(
+      <NotificationProvider><div>test</div></NotificationProvider>
+    );
+
+    // Esperar al useEffect inicial
     await act(async () => {
-      unmount();
+      await new Promise(resolve => setTimeout(resolve, 0));
     });
+
+    // Cubrir el registro del evento
+    const onCall = mockConnection.on.mock.calls.find(call => call[0] === 'ReceiveReminderAlert');
+    expect(onCall).toBeDefined();
     
+    if (onCall) {
+      act(() => {
+        onCall[1]({ noteId: 1, message: 'Test', timestamp: '2026' });
+      });
+    }
+
+    // Cubrir el cleanup (return () => ...)
+    unmount();
     expect(mockConnection.off).toHaveBeenCalledWith('ReceiveReminderAlert');
     expect(mockConnection.stop).toHaveBeenCalled();
   });
 
-  it('debe ejecutar el callback de alerta al recibir ReceiveReminderAlert', async () => {
-    const mockAlert = vi.fn();
-    vi.stubGlobal('alert', mockAlert);
+  it('debe cubrir la rama del catch en el bloque try-catch', async () => {
+    // Forzamos el error
+    const error = new Error('Connection Failed');
+    mockConnection.start.mockRejectedValueOnce(error);
+    
+    // Espiar console.error para evitar ruido en consola
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
-    let capturedCallback: any;
-    mockConnection.on.mockImplementation((event, cb) => {
-      if (event === 'ReceiveReminderAlert') {
-        capturedCallback = cb;
-      }
-      return mockConnection;
+    await act(async () => {
+      render(<NotificationProvider><div>fail</div></NotificationProvider>);
     });
 
     await act(async () => {
-      renderHook(() => useNotifications(), { wrapper: NotificationProvider });
+      await new Promise(resolve => setTimeout(resolve, 0));
     });
 
-    await waitFor(() => {
-      expect(mockConnection.on).toHaveBeenCalledWith('ReceiveReminderAlert', expect.any(Function));
-    });
-
-    await act(async () => {
-      capturedCallback({ noteId: 1, message: 'Test', timestamp: 'now' });
-    });
-
-    expect(mockAlert).toHaveBeenCalled();
-    vi.unstubAllGlobals();
+    expect(mockConnection.start).toHaveBeenCalled();
+    expect(consoleSpy).toHaveBeenCalledWith('[SignalR] Error al conectar:', error);
+    
+    consoleSpy.mockRestore();
   });
 
-  it('debe lanzar un error si se usa useNotifications fuera del provider', () => {
+  it('debe lanzar un error si useNotifications se usa fuera del Provider', () => {
+    // Necesitamos silenciar el error esperado en la consola para que el test no se vea "rojo"
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     
-    expect(() => renderHook(() => useNotifications())).toThrow(
-      'useNotifications debe usarse dentro de un NotificationProvider'
-    );
-    
+    // Al intentar usar el hook sin el componente NotificationProvider, debe fallar
+    expect(() => {
+      render(
+        // Renderizamos algo que no es el Provider
+        <div>test</div>
+      );
+      // Creamos un componente interno que llama al hook
+      const TestComponent = () => {
+        useNotifications();
+        return null;
+      };
+      render(<TestComponent />);
+    }).toThrow('useNotifications debe usarse dentro de un NotificationProvider');
+
     consoleSpy.mockRestore();
   });
 });

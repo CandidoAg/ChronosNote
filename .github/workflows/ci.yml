@@ -28,8 +28,12 @@ jobs:
     - name: Restore NuGet Dependencies
       run: dotnet restore ChronosNote.sln
 
-    - name: Build Backend (Release Mode)
-      run: dotnet build ChronosNote.sln --configuration Release --no-restore
+    - name: Publish Backend (Release Mode)
+      run: |
+        dotnet publish ChronosNote.sln \
+          --configuration Release \
+          --output ./publish \
+          --no-restore
 
     - name: Run Unit Tests & Coverage
       if: matrix.suite == 'Dotnet Checks'
@@ -74,7 +78,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: chronosnote-backend-build
-        path: src/server/ChronosNote.Api/bin/Release/net8.0/publish/ 
+        path: ./publish/
 
   # 🎨 FRONTEND JOB: Node + pnpm Assets Build with Matrix
   frontend-validation:
@@ -94,7 +98,7 @@ jobs:
         node-version: '22'
 
     - name: Install pnpm
-      uses: pnpm/action-setup@v3
+      uses: pnpm/action-setup@v4
       with:
         version: 9
 
